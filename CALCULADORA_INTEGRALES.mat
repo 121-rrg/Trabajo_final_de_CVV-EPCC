@@ -1,0 +1,281 @@
+classdef app2 < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        UIFigure                      matlab.ui.Figure
+        CalcularPanel                 matlab.ui.container.Panel
+        integrar                      matlab.ui.control.Button
+        RecuerdaTextArea              matlab.ui.control.TextArea
+        RecuerdaTextAreaLabel         matlab.ui.control.Label
+        resultado                     matlab.ui.control.TextArea
+        ResultadoTextAreaLabel        matlab.ui.control.Label
+        InformaciondelaFuncionPanel   matlab.ui.container.Panel
+        IntroduzcasufuncionaintegrarLabel  matlab.ui.control.Label
+        TipodeIntegral                matlab.ui.control.ToggleSwitch
+        TipodeIntegralSwitchLabel     matlab.ui.control.Label
+        funcion                       matlab.ui.control.TextArea
+        lim_superior                  matlab.ui.control.NumericEditField
+        LimiteSuperiorintegraldefinidaEditFieldLabel  matlab.ui.control.Label
+        lim_inferior                  matlab.ui.control.NumericEditField
+        LimiteInferiorintegraldefinidaEditFieldLabel  matlab.ui.control.Label
+        CALCULADORADEINTEGRALESLabel  matlab.ui.control.Label
+        grafica                       matlab.ui.control.UIAxes
+    end
+
+
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Code that executes after component creation
+        function startupFcn(app)
+
+        end
+
+        % Value changed function: funcion
+        function funcionValueChanged(app, event)
+            global f
+            value = app.funcion.Value;
+            f=value;
+        end
+
+        % Value changed function: lim_superior
+        function lim_superiorValueChanged(app, event)
+            global lim_sup
+            value = app.lim_superior.Value;
+            lim_sup= value;
+        end
+
+        % Value changed function: lim_inferior
+        function lim_inferiorValueChanged(app, event)
+            global lim_inf
+            value = app.lim_inferior.Value;
+            lim_inf=value;
+        end
+
+        % Callback function
+        function TipodeIntegralSwitchValueChanged(app, event)
+
+        end
+
+        % Close request function: UIFigure
+        function UIFigureCloseRequest(app, event)
+            delete(app)
+            clc
+            clear all
+        end
+
+        % Button pushed function: integrar
+        function integrarButtonPushed(app, event)
+            global tipo lim_inf lim_sup f
+             x = sym('x'); % integra solo en "X"
+             if strcmp(tipo, 'Definida') % cuando la integral es definida
+                fu= str2sym(f); % hace un cast (cambio) de string a expresion algebraica
+                i = int(fu,x,lim_inf, lim_sup); %almacena la funcion de la integral en "i"
+                fplot(app.grafica,i); % grafica la integral en el axes (graficador)
+                conv = arrayfun(@char,i,'uniform',0); % lo convierte a char para imprimirlo
+                conv = cell2mat(conv);
+                app.resultado.Value = conv; % muestra el resultado
+             elseif strcmp(tipo, 'Indefinida') 
+                fu = str2sym(f); 
+                i= int(fu,x); 
+                fplot(app.grafica,i); 
+                conv = arrayfun(@char,i,'uniform',0); 
+                conv = cell2mat(conv); 
+                app.resultado.Value = conv;
+             end
+
+        end
+
+        % Button down function: UIFigure
+        function UIFigureButtonDown(app, event)
+            
+        end
+
+        % Value changed function: TipodeIntegral
+        function TipodeIntegralValueChanged(app, event)
+            global tipo
+            value = app.TipodeIntegral.Value;
+            tipo=value;  % se asemeja a un valor bool
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create UIFigure and hide until all components are created
+            app.UIFigure = uifigure('Visible', 'off');
+            app.UIFigure.Color = [0.949 0.3529 0.5922];
+            app.UIFigure.Position = [100 100 687 525];
+            app.UIFigure.Name = 'MATLAB App';
+            app.UIFigure.CloseRequestFcn = createCallbackFcn(app, @UIFigureCloseRequest, true);
+            app.UIFigure.ButtonDownFcn = createCallbackFcn(app, @UIFigureButtonDown, true);
+
+            % Create grafica
+            app.grafica = uiaxes(app.UIFigure);
+            title(app.grafica, 'Grafica Funcion')
+            xlabel(app.grafica, 'X')
+            ylabel(app.grafica, 'Y')
+            zlabel(app.grafica, 'Z')
+            app.grafica.Position = [16 214 386 234];
+
+            % Create CALCULADORADEINTEGRALESLabel
+            app.CALCULADORADEINTEGRALESLabel = uilabel(app.UIFigure);
+            app.CALCULADORADEINTEGRALESLabel.BackgroundColor = [0 0 0];
+            app.CALCULADORADEINTEGRALESLabel.HorizontalAlignment = 'center';
+            app.CALCULADORADEINTEGRALESLabel.FontSize = 14;
+            app.CALCULADORADEINTEGRALESLabel.FontWeight = 'bold';
+            app.CALCULADORADEINTEGRALESLabel.FontColor = [1 1 1];
+            app.CALCULADORADEINTEGRALESLabel.Position = [183 478 305 26];
+            app.CALCULADORADEINTEGRALESLabel.Text = 'CALCULADORA DE INTEGRALES';
+
+            % Create InformaciondelaFuncionPanel
+            app.InformaciondelaFuncionPanel = uipanel(app.UIFigure);
+            app.InformaciondelaFuncionPanel.TitlePosition = 'centertop';
+            app.InformaciondelaFuncionPanel.Title = 'Informacion de la Funcion';
+            app.InformaciondelaFuncionPanel.BackgroundColor = [1 1 0];
+            app.InformaciondelaFuncionPanel.FontWeight = 'bold';
+            app.InformaciondelaFuncionPanel.FontSize = 13;
+            app.InformaciondelaFuncionPanel.Position = [17 19 442 174];
+
+            % Create LimiteInferiorintegraldefinidaEditFieldLabel
+            app.LimiteInferiorintegraldefinidaEditFieldLabel = uilabel(app.InformaciondelaFuncionPanel);
+            app.LimiteInferiorintegraldefinidaEditFieldLabel.HorizontalAlignment = 'right';
+            app.LimiteInferiorintegraldefinidaEditFieldLabel.FontWeight = 'bold';
+            app.LimiteInferiorintegraldefinidaEditFieldLabel.FontAngle = 'italic';
+            app.LimiteInferiorintegraldefinidaEditFieldLabel.Position = [25 10 183 22];
+            app.LimiteInferiorintegraldefinidaEditFieldLabel.Text = 'Limite Inferior(integral definida)';
+
+            % Create lim_inferior
+            app.lim_inferior = uieditfield(app.InformaciondelaFuncionPanel, 'numeric');
+            app.lim_inferior.ValueChangedFcn = createCallbackFcn(app, @lim_inferiorValueChanged, true);
+            app.lim_inferior.FontWeight = 'bold';
+            app.lim_inferior.Position = [223 10 100 22];
+
+            % Create LimiteSuperiorintegraldefinidaEditFieldLabel
+            app.LimiteSuperiorintegraldefinidaEditFieldLabel = uilabel(app.InformaciondelaFuncionPanel);
+            app.LimiteSuperiorintegraldefinidaEditFieldLabel.HorizontalAlignment = 'right';
+            app.LimiteSuperiorintegraldefinidaEditFieldLabel.FontWeight = 'bold';
+            app.LimiteSuperiorintegraldefinidaEditFieldLabel.FontAngle = 'italic';
+            app.LimiteSuperiorintegraldefinidaEditFieldLabel.Position = [11 46 195 22];
+            app.LimiteSuperiorintegraldefinidaEditFieldLabel.Text = 'Limite Superior (integral definida)';
+
+            % Create lim_superior
+            app.lim_superior = uieditfield(app.InformaciondelaFuncionPanel, 'numeric');
+            app.lim_superior.ValueChangedFcn = createCallbackFcn(app, @lim_superiorValueChanged, true);
+            app.lim_superior.FontWeight = 'bold';
+            app.lim_superior.Position = [221 46 100 22];
+
+            % Create funcion
+            app.funcion = uitextarea(app.InformaciondelaFuncionPanel);
+            app.funcion.ValueChangedFcn = createCallbackFcn(app, @funcionValueChanged, true);
+            app.funcion.FontWeight = 'bold';
+            app.funcion.Position = [186 89 138 43];
+
+            % Create TipodeIntegralSwitchLabel
+            app.TipodeIntegralSwitchLabel = uilabel(app.InformaciondelaFuncionPanel);
+            app.TipodeIntegralSwitchLabel.HorizontalAlignment = 'center';
+            app.TipodeIntegralSwitchLabel.FontWeight = 'bold';
+            app.TipodeIntegralSwitchLabel.Position = [340 18 92 22];
+            app.TipodeIntegralSwitchLabel.Text = 'Tipo de Integral';
+
+            % Create TipodeIntegral
+            app.TipodeIntegral = uiswitch(app.InformaciondelaFuncionPanel, 'toggle');
+            app.TipodeIntegral.Items = {'Definida', 'Indefinida'};
+            app.TipodeIntegral.ValueChangedFcn = createCallbackFcn(app, @TipodeIntegralValueChanged, true);
+            app.TipodeIntegral.FontWeight = 'bold';
+            app.TipodeIntegral.Position = [376 76 20 45];
+            app.TipodeIntegral.Value = 'Definida';
+
+            % Create IntroduzcasufuncionaintegrarLabel
+            app.IntroduzcasufuncionaintegrarLabel = uilabel(app.InformaciondelaFuncionPanel);
+            app.IntroduzcasufuncionaintegrarLabel.FontWeight = 'bold';
+            app.IntroduzcasufuncionaintegrarLabel.FontAngle = 'italic';
+            app.IntroduzcasufuncionaintegrarLabel.Position = [6 102 182 22];
+            app.IntroduzcasufuncionaintegrarLabel.Text = 'Introduzca su funciona integrar';
+
+            % Create ResultadoTextAreaLabel
+            app.ResultadoTextAreaLabel = uilabel(app.UIFigure);
+            app.ResultadoTextAreaLabel.BackgroundColor = [0 1 1];
+            app.ResultadoTextAreaLabel.HorizontalAlignment = 'right';
+            app.ResultadoTextAreaLabel.FontSize = 13;
+            app.ResultadoTextAreaLabel.FontWeight = 'bold';
+            app.ResultadoTextAreaLabel.Position = [410 228 72 22];
+            app.ResultadoTextAreaLabel.Text = 'Resultado:';
+
+            % Create resultado
+            app.resultado = uitextarea(app.UIFigure);
+            app.resultado.WordWrap = 'off';
+            app.resultado.Position = [497 192 150 60];
+
+            % Create RecuerdaTextAreaLabel
+            app.RecuerdaTextAreaLabel = uilabel(app.UIFigure);
+            app.RecuerdaTextAreaLabel.BackgroundColor = [0 1 1];
+            app.RecuerdaTextAreaLabel.HorizontalAlignment = 'right';
+            app.RecuerdaTextAreaLabel.FontSize = 13;
+            app.RecuerdaTextAreaLabel.FontWeight = 'bold';
+            app.RecuerdaTextAreaLabel.Position = [409 428 66 22];
+            app.RecuerdaTextAreaLabel.Text = 'Recuerda';
+
+            % Create RecuerdaTextArea
+            app.RecuerdaTextArea = uitextarea(app.UIFigure);
+            app.RecuerdaTextArea.FontSize = 13;
+            app.RecuerdaTextArea.FontWeight = 'bold';
+            app.RecuerdaTextArea.BackgroundColor = [0.7176 0.2745 1];
+            app.RecuerdaTextArea.Position = [490 270 183 182];
+            app.RecuerdaTextArea.Value = {'Potencia:               x^2'; 'Raiz:                      sqrt()'; 'Producto:                *'; 'Exponencial:        exp()'; 'Log Natural:         log()'; 'Log base 10:       log10()'; ''; 'NOTA:'; 'Siempre se integra respecto a X.'; ''};
+
+            % Create CalcularPanel
+            app.CalcularPanel = uipanel(app.UIFigure);
+            app.CalcularPanel.TitlePosition = 'centertop';
+            app.CalcularPanel.Title = 'Calcular:';
+            app.CalcularPanel.BackgroundColor = [0.7176 0.2745 1];
+            app.CalcularPanel.FontWeight = 'bold';
+            app.CalcularPanel.FontSize = 13;
+            app.CalcularPanel.Position = [486 78 178 75];
+
+            % Create integrar
+            app.integrar = uibutton(app.CalcularPanel, 'push');
+            app.integrar.ButtonPushedFcn = createCallbackFcn(app, @integrarButtonPushed, true);
+            app.integrar.BackgroundColor = [0 0 0];
+            app.integrar.FontWeight = 'bold';
+            app.integrar.FontColor = [1 1 1];
+            app.integrar.Position = [22 14 136 24];
+            app.integrar.Text = 'CALCULAR INTEGRAL';
+
+            % Show the figure after all components are created
+            app.UIFigure.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = app2
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.UIFigure)
+
+            % Execute the startup function
+            runStartupFcn(app, @startupFcn)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.UIFigure)
+        end
+    end
+end
