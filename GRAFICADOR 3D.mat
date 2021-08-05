@@ -1,0 +1,336 @@
+classdef app1 < matlab.apps.AppBase
+
+    % Properties that correspond to app components
+    properties (Access = public)
+        AplicacionDeGraficos       matlab.ui.Figure
+        GRAFICODEFUNCIONESLabel    matlab.ui.control.Label
+        GRAFICARButton             matlab.ui.control.Button
+        CONFIGURACIONGRAFICOPanel  matlab.ui.container.Panel
+        GradienteCheckBox          matlab.ui.control.CheckBox
+        TIPODEGRAFICOButtonGroup   matlab.ui.container.ButtonGroup
+        Pol2CartButton             matlab.ui.control.RadioButton
+        RevolucionButton           matlab.ui.control.RadioButton
+        EsfericaButton             matlab.ui.control.RadioButton
+        TridimensionalButton       matlab.ui.control.RadioButton
+        ConicaButton               matlab.ui.control.RadioButton
+        COLORLabel                 matlab.ui.control.Label
+        grafica                    matlab.ui.control.UIAxes
+    end
+
+    % Callbacks that handle component events
+    methods (Access = private)
+
+        % Button pushed function: GRAFICARButton
+        function GRAFICARButtonPushed(app, event)
+           global o1 o2 o3 o4 o5 value
+            if value == 0
+                if o1 == 1
+                    %grafica de una superficie conica
+                    theta=pi/3;
+                    r=linspace(0,1,30);
+                    phi=linspace(0,2*pi,30);
+                    [r,phi]=meshgrid(r,phi); % inicializar los valores r y phi y crea la matriz
+                    x=r.*cos(phi)*sin(theta); % variable x
+                    y=r.*sin(phi)*sin(theta); % variable y
+                    z=r*cos(theta);
+                    surf(app.grafica,x,y,z)  %surf: muestra la grafica en superficie
+                elseif o2 == 1
+                    % Grafica de superficie tridimensional
+                    [X,Y]= meshgrid(-8:.5:8);
+                    R = sqrt(X.^2 + Y.^2) + eps;
+                    Z = sin(R)./R;
+                    waterfall(app.grafica,X,Y,Z)
+                    colorbar
+                elseif o3 == 1
+                    %esfera
+                    R=1;
+                    phi=linspace(0,pi,30);
+                    theta=linspace(0,2*pi,40);
+                    [phi,theta]=meshgrid(phi,theta);
+                    x=R*sin(phi).*cos(theta);
+                    y=R*sin(phi).*sin(theta);
+                    z=R*cos(phi);
+                    h1=surf(app.grafica,x,y,z);
+                    set(h1,'EdgeColor',[0.6,0.6,0.6]);
+                    %probar una superficie esférica semitransparente
+                    %set(h1,'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.5,'FaceAlpha',0.5) 
+                    
+                    %paralelo
+                    theta=pi/3;
+                    phi=0:0.1:2*pi+0.1;
+                    x=sin(theta)*cos(phi);
+                    y=sin(theta)*sin(phi);
+                    z=cos(theta)*ones(1,length(x));
+                    h1=line(app.grafica,x,y,z);
+                    set(h1,'Color',[.7,0,0],'LineWidth',1.5)
+                    %meridiano de referencia
+                    phi=0;
+                    theta=-pi:0.1:pi;
+                    x=sin(theta)*cos(phi);
+                    y=sin(theta)*sin(phi);
+                    z=cos(theta);
+                    h1=line(app.grafica,x,y,z);
+                    set(h1,'Color',[0,0,.7],'LineWidth',1)
+                    %meridiano
+                    phi=-pi/6;
+                    theta=-pi:0.1:pi;
+                    x=sin(theta)*cos(phi);
+                    y=sin(theta)*sin(phi);
+                    z=cos(theta);
+                    h1=line(app.grafica,x,y,z);
+                    set(h1,'Color',[.7,0,0],'LineWidth',1.5)
+                elseif o4 == 1
+                    % Superficie de revolucion
+                    x=linspace(1, 5, 50);
+                    z=1./x; 
+                    [X,Y,Z]=cylinder(z);
+                    surf(app.grafica,X,Y,-Z);
+                elseif o5 == 1
+                    %Utilizar la función pol2cart para convertir 
+                    % coordenadas polares a coordenadas rectangulares.
+                    r=0:0.1:2;
+                    angulo=(0:5:360)*pi/180;
+                    [Ang,Radio]=meshgrid(angulo,r);
+                    Z=Radio.*Ang;
+                    [X,Y] = pol2cart(Ang,Radio);
+                    surf(app.grafica,X,Y,Z)
+                else
+                    app.grafica.cla;
+                end
+            end
+            if value == 1
+                if o1 == 1
+                    %grafica de una superficie conica
+                    theta=pi/3;
+                    r=linspace(0,1,30);
+                    phi=linspace(0,2*pi,30);
+                    [r,phi]=meshgrid(r,phi);
+                    x=r.*cos(phi)*sin(theta);
+                    y=r.*sin(phi)*sin(theta);
+                    z=r*cos(theta);
+                    C=gradient(z);
+                    surf(app.grafica,x,y,z,C)
+                 
+                elseif o2 == 1
+                    [X,Y]= meshgrid(-8:.5:8);
+                    R = sqrt(X.^2 + Y.^2) + eps;
+                    Z = sin(R)./R;
+                    C = gradient(Z);
+                    surf(app.grafica,X,Y,Z,C)
+                    colorbar
+                   
+                elseif o3 == 1
+                    %esfera
+                    R=1;
+                    phi=linspace(0,pi,30);
+                    theta=linspace(0,2*pi,40);
+                    [phi,theta]=meshgrid(phi,theta);
+                    x=R*sin(phi).*cos(theta);
+                    y=R*sin(phi).*sin(theta);
+                    z=R*cos(phi);
+                    C=gradient(x);
+                    h1=surf(app.grafica,x,y,z,C);
+                    set(h1,'EdgeColor',[0.6,0.6,0.6]);
+                    %probar una superficie esférica semitransparente
+                    %set(h1,'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.5,'FaceAlpha',0.5) 
+                    
+                    %paralelo
+                    theta=pi/3;
+                    phi=0:0.1:2*pi+0.1;
+                    x=sin(theta)*cos(phi);
+                    y=sin(theta)*sin(phi);
+                    z=cos(theta)*ones(1,length(x));
+                    h1=line(app.grafica,x,y,z);
+                    set(h1,'Color',[.7,0,0],'LineWidth',1.5)
+                    %meridiano de referencia
+                    phi=0;
+                    theta=-pi:0.1:pi;
+                    x=sin(theta)*cos(phi);
+                    y=sin(theta)*sin(phi);
+                    z=cos(theta);
+                    h1=line(app.grafica,x,y,z);
+                    set(h1,'Color',[0,0,.7],'LineWidth',1)
+                    %meridiano
+                    phi=-pi/6;
+                    theta=-pi:0.1:pi;
+                    x=sin(theta)*cos(phi);
+                    y=sin(theta)*sin(phi);
+                    z=cos(theta);
+                    h1=line(app.grafica,x,y,z);
+                    set(h1,'Color',[.7,0,0],'LineWidth',1.5)
+                elseif o4 == 1
+                    % Superficie de revolucion
+                    x=linspace(1, 5, 50);
+                    z=1./x; 
+                    [X,Y,Z]=cylinder(z);
+                    C=gradient(Z);
+                    surf(app.grafica,X,Y,-Z,C);
+                    
+                 elseif o5 == 1
+                    %Utilizar la función pol2cart para convertir 
+                    % coordenadas polares a coordenadas rectangulares.
+                    r=0:0.1:2;
+                    angulo=(0:5:360)*pi/180;
+                    [Ang,Radio]=meshgrid(angulo,r);
+                    Z=Radio.*Ang;
+                    [X,Y] = pol2cart(Ang,Radio);
+                    C=gradient(Z);
+                    surf(app.grafica,X,Y,Z,C)
+                else
+                    app.grafica.cla;
+                end
+            end 
+        end
+
+        % Value changed function: GradienteCheckBox
+        function GradienteCheckBoxValueChanged(app, event)
+            global value
+            value = app.GradienteCheckBox.Value;
+        end
+
+        % Selection changed function: TIPODEGRAFICOButtonGroup
+        function TIPODEGRAFICOButtonGroupSelectionChanged(app, event)
+            global o1 o2 o3 o4 o5
+            selectedButton = app.TIPODEGRAFICOButtonGroup.SelectedObject;
+            o1 = app.ConicaButton.Value;
+            o2 = app.TridimensionalButton.Value;
+            o3 = app.EsfericaButton.Value;
+            o4 = app.RevolucionButton.Value;
+            o5 = app.Pol2CartButton.Value;
+        end
+    end
+
+    % Component initialization
+    methods (Access = private)
+
+        % Create UIFigure and components
+        function createComponents(app)
+
+            % Create AplicacionDeGraficos and hide until all components are created
+            app.AplicacionDeGraficos = uifigure('Visible', 'off');
+            app.AplicacionDeGraficos.Color = [0.8 0.8 0.8];
+            app.AplicacionDeGraficos.Position = [100 100 671 500];
+            app.AplicacionDeGraficos.Name = 'MATLAB App';
+
+            % Create grafica
+            app.grafica = uiaxes(app.AplicacionDeGraficos);
+            title(app.grafica, 'GRAFICO 3D')
+            xlabel(app.grafica, 'X')
+            ylabel(app.grafica, 'Y')
+            zlabel(app.grafica, 'Z')
+            app.grafica.FontWeight = 'bold';
+            app.grafica.ColorOrder = [0 0.4471 0.7412;0.851 0.3255 0.098;0.9294 0.6941 0.1255;0.4941 0.1843 0.5569;0.4667 0.6745 0.1882;0.302 0.7451 0.9333;0.6353 0.0784 0.1843];
+            app.grafica.Position = [193 1 460 443];
+
+            % Create CONFIGURACIONGRAFICOPanel
+            app.CONFIGURACIONGRAFICOPanel = uipanel(app.AplicacionDeGraficos);
+            app.CONFIGURACIONGRAFICOPanel.ForegroundColor = [1 1 1];
+            app.CONFIGURACIONGRAFICOPanel.TitlePosition = 'centertop';
+            app.CONFIGURACIONGRAFICOPanel.Title = 'CONFIGURACION GRAFICO';
+            app.CONFIGURACIONGRAFICOPanel.BackgroundColor = [0 0 0];
+            app.CONFIGURACIONGRAFICOPanel.FontWeight = 'bold';
+            app.CONFIGURACIONGRAFICOPanel.Position = [11 166 171 272];
+
+            % Create COLORLabel
+            app.COLORLabel = uilabel(app.CONFIGURACIONGRAFICOPanel);
+            app.COLORLabel.FontWeight = 'bold';
+            app.COLORLabel.FontColor = [1 1 1];
+            app.COLORLabel.Position = [13 31 46 22];
+            app.COLORLabel.Text = 'COLOR';
+
+            % Create TIPODEGRAFICOButtonGroup
+            app.TIPODEGRAFICOButtonGroup = uibuttongroup(app.CONFIGURACIONGRAFICOPanel);
+            app.TIPODEGRAFICOButtonGroup.SelectionChangedFcn = createCallbackFcn(app, @TIPODEGRAFICOButtonGroupSelectionChanged, true);
+            app.TIPODEGRAFICOButtonGroup.ForegroundColor = [1 1 1];
+            app.TIPODEGRAFICOButtonGroup.TitlePosition = 'centertop';
+            app.TIPODEGRAFICOButtonGroup.Title = 'TIPO DE GRAFICO';
+            app.TIPODEGRAFICOButtonGroup.BackgroundColor = [0 0 0];
+            app.TIPODEGRAFICOButtonGroup.FontWeight = 'bold';
+            app.TIPODEGRAFICOButtonGroup.Position = [5 63 130 184];
+
+            % Create ConicaButton
+            app.ConicaButton = uiradiobutton(app.TIPODEGRAFICOButtonGroup);
+            app.ConicaButton.Text = 'Conica';
+            app.ConicaButton.FontColor = [1 0 0];
+            app.ConicaButton.Position = [11 137 61 22];
+            app.ConicaButton.Value = true;
+
+            % Create TridimensionalButton
+            app.TridimensionalButton = uiradiobutton(app.TIPODEGRAFICOButtonGroup);
+            app.TridimensionalButton.Text = 'Tridimensional';
+            app.TridimensionalButton.FontColor = [0.3922 0.8314 0.0745];
+            app.TridimensionalButton.Position = [11 116 105 22];
+
+            % Create EsfericaButton
+            app.EsfericaButton = uiradiobutton(app.TIPODEGRAFICOButtonGroup);
+            app.EsfericaButton.Text = 'Esferica';
+            app.EsfericaButton.FontColor = [1 1 0];
+            app.EsfericaButton.Position = [11 94 67 22];
+
+            % Create RevolucionButton
+            app.RevolucionButton = uiradiobutton(app.TIPODEGRAFICOButtonGroup);
+            app.RevolucionButton.Text = 'Revolucion';
+            app.RevolucionButton.FontColor = [0 1 1];
+            app.RevolucionButton.Position = [10 73 83 22];
+
+            % Create Pol2CartButton
+            app.Pol2CartButton = uiradiobutton(app.TIPODEGRAFICOButtonGroup);
+            app.Pol2CartButton.Text = 'Pol2Cart';
+            app.Pol2CartButton.FontColor = [1 0 1];
+            app.Pol2CartButton.Position = [11 52 70 22];
+
+            % Create GradienteCheckBox
+            app.GradienteCheckBox = uicheckbox(app.CONFIGURACIONGRAFICOPanel);
+            app.GradienteCheckBox.ValueChangedFcn = createCallbackFcn(app, @GradienteCheckBoxValueChanged, true);
+            app.GradienteCheckBox.Text = 'Gradiente';
+            app.GradienteCheckBox.FontColor = [1 1 1];
+            app.GradienteCheckBox.Position = [12 10 76 22];
+
+            % Create GRAFICARButton
+            app.GRAFICARButton = uibutton(app.AplicacionDeGraficos, 'push');
+            app.GRAFICARButton.ButtonPushedFcn = createCallbackFcn(app, @GRAFICARButtonPushed, true);
+            app.GRAFICARButton.BackgroundColor = [0 0 0];
+            app.GRAFICARButton.FontWeight = 'bold';
+            app.GRAFICARButton.FontColor = [1 0 0];
+            app.GRAFICARButton.Position = [28 118 129 38];
+            app.GRAFICARButton.Text = 'GRAFICAR';
+
+            % Create GRAFICODEFUNCIONESLabel
+            app.GRAFICODEFUNCIONESLabel = uilabel(app.AplicacionDeGraficos);
+            app.GRAFICODEFUNCIONESLabel.BackgroundColor = [0 0 0];
+            app.GRAFICODEFUNCIONESLabel.FontSize = 14;
+            app.GRAFICODEFUNCIONESLabel.FontWeight = 'bold';
+            app.GRAFICODEFUNCIONESLabel.FontColor = [1 1 1];
+            app.GRAFICODEFUNCIONESLabel.Position = [257 470 178 22];
+            app.GRAFICODEFUNCIONESLabel.Text = 'GRAFICO DE FUNCIONES';
+
+            % Show the figure after all components are created
+            app.AplicacionDeGraficos.Visible = 'on';
+        end
+    end
+
+    % App creation and deletion
+    methods (Access = public)
+
+        % Construct app
+        function app = app1
+
+            % Create UIFigure and components
+            createComponents(app)
+
+            % Register the app with App Designer
+            registerApp(app, app.AplicacionDeGraficos)
+
+            if nargout == 0
+                clear app
+            end
+        end
+
+        % Code that executes before app deletion
+        function delete(app)
+
+            % Delete UIFigure when app is deleted
+            delete(app.AplicacionDeGraficos)
+        end
+    end
+end
